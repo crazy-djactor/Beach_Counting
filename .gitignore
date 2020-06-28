@@ -7,3 +7,4 @@ config/camera_list.txt
 /models/frozen_inference_graph_faster_50.pb
 /models/frozen_inference_graph_faster_101.pb
 .idea
+/models/yolo.h5
