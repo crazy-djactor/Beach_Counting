@@ -18,5 +18,5 @@ After install packages, should copy models and config folder manually because th
         
 
 ## Donwload models
-    wget https://drive.google.com/file/d/1pIwotoRlgUH09eyQvKXnhquMSx8RDWQS/view?usp=sharing
-    wget https://drive.google.com/file/d/1AwqhHwOcxg7jq2iU_FeAMT-F4Z-qq3Va/view?usp=sharing
+    wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1pIwotoRlgUH09eyQvKXnhquMSx8RDWQS' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1pIwotoRlgUH09eyQvKXnhquMSx8RDWQS" -O frozen_inference_graph_faster_50.pb && rm -rf /tmp/cookies.txt
+    wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1AwqhHwOcxg7jq2iU_FeAMT-F4Z-qq3Va' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1AwqhHwOcxg7jq2iU_FeAMT-F4Z-qq3Va" -O frozen_inference_graph_faster_101.pb && rm -rf /tmp/cookies.txt
