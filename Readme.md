@@ -16,3 +16,7 @@ After install packages, should copy models and config folder manually because th
 
         python process_video.py [source]
         
+
+## Donwload models
+    wget https://drive.google.com/file/d/1pIwotoRlgUH09eyQvKXnhquMSx8RDWQS/view?usp=sharing
+    wget https://drive.google.com/file/d/1AwqhHwOcxg7jq2iU_FeAMT-F4Z-qq3Va/view?usp=sharing
