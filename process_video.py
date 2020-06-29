@@ -186,6 +186,6 @@ if __name__ == '__main__':
             format(CAMERA_USER_NAME, CAMERA_PASSWORD, CAMERA_IP)
 
     class_obj = ProcessVideo(MODEL_NAME)
-    # video_src = './3.mov'
+    video_src = './3.mov'
     # class_obj.process_video(filename, f_save=False)
     class_obj.process_video_split(video_src, f_send_server=F_SEND_SERVER, f_save=F_WRITE_VIDEO, f_show=F_SHOW_RESULT)

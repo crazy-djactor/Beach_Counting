@@ -25,9 +25,9 @@ def send_request(server, req_json):
     response = requests.post(url=server, json=req_json)
     print("Server responded with %s" % response.status_code)
 
-    response_json = response.json()
-    return response_json
-
+    # response_json = response.json()
+    # return response_json
+    return response
 
 if __name__ == '__main__':
 
