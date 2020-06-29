@@ -5,7 +5,7 @@ import json
 import sys
 
 
-def make_request_json(ip_addr, img_file, count=0):
+def make_request_json(ip_addr, img_file, cam_name, count=0):
 
     file_data = open(img_file, 'rb')
 
@@ -13,7 +13,8 @@ def make_request_json(ip_addr, img_file, count=0):
         "type": 'post',
         "ip": ip_addr,
         "image": base64.b64encode(file_data.read()).decode('UTF-8'),
-        "count": count
+        "count": count,
+        "cam_name": cam_name
     }
 
     return json_data

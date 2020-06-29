@@ -139,7 +139,8 @@ class ProcessVideo:
             if f_send_server:
                 temp_name = str(time.time()) + '.jpg'
                 cv2.imwrite(temp_name, frame)
-                json_req = make_request_json(ip_addr=video_source, img_file=temp_name, count=len(valid_rects))
+                json_req = make_request_json(ip_addr=video_source, img_file=temp_name, count=len(valid_rects),
+                                             cam_name=CAMERA_NAME)
                 send_request(SERVER_URL, json_req)
                 func.rm_file(temp_name)
 

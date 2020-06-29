@@ -4,7 +4,6 @@ config/camera_list.txt
 /output.avi
 /models/75626_170703_compressed_yolo.h5.zip
 /models/75626_170703_compressed_yolo.h5/
-/models/frozen_inference_graph_faster_50.pb
 /models/frozen_inference_graph_faster_101.pb
 .idea
 /models/yolo.h5
