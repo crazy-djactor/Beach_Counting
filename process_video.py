@@ -141,7 +141,7 @@ class ProcessVideo:
                 cv2.imwrite(temp_name, frame)
                 json_req = make_request_json(ip_addr=video_source, img_file=temp_name, count=len(valid_rects),
                                              cam_name=CAMERA_NAME)
-                send_request(SERVER_URL, json_req)
+                send_request(server=SERVER_URL, cam_name=CAMERA_NAME, req_json=json_req)
                 func.rm_file(temp_name)
 
             # ---------------------------- draw the result -------------------------------
@@ -186,6 +186,6 @@ if __name__ == '__main__':
             format(CAMERA_USER_NAME, CAMERA_PASSWORD, CAMERA_IP)
 
     class_obj = ProcessVideo(MODEL_NAME)
-    # video_src = './3.mov'
+    video_src = './3.mov'
     # class_obj.process_video(filename, f_save=False)
     class_obj.process_video_split(video_src, f_send_server=F_SEND_SERVER, f_save=F_WRITE_VIDEO, f_show=F_SHOW_RESULT)
