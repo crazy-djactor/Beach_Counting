@@ -143,7 +143,7 @@ class ProcessVideo:
                 json_req = make_request_json(ip_addr=video_source, img_file=temp_name, count=len(valid_rects),
                                              cam_name=CAMERA_NAME)
                 send_request(server=SERVER_URL, cam_name=CAMERA_NAME, req_json=json_req)
-                func.rm_file(temp_name)
+                # func.rm_file(temp_name)
 
             # ---------------------------- draw the result -------------------------------
             print('The are {} peoples.'.format(len(valid_rects)))
