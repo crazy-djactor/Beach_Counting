@@ -56,7 +56,8 @@ class ProcessVideo:
             ret, frame = cap.read()
 
             if not ret:
-                break
+                time.sleep(0.1)
+                continue
 
             img_draw, valid_rects = self.process_image(frame, DETECT_THRESHOLD)
 
@@ -82,7 +83,7 @@ class ProcessVideo:
         start_w = int(video_w * 0.45)
         end_w = int(video_w * 0.55)
         fps = cap.get(cv2.CAP_PROP_FPS)
-        out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
+        # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
 
         while True:
             ret, frame = cap.read()
