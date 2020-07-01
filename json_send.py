@@ -7,7 +7,7 @@ import sys
 
 def make_request_json(ip_addr, img_file, cam_name, count=0):
 
-    file_data = open(img_file, 'rb')
+    # file_data = open(img_file, 'rb')
 
     json_data = {
         "type": 'post',
