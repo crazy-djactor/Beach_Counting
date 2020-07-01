@@ -1,5 +1,8 @@
+import threading
+
 from config.setting import *
 from json_send import *
+from queue import LifoQueue
 import func
 import time
 import cv2
@@ -7,6 +10,11 @@ import sys
 
 
 class ProcessVideo:
+    stack = None
+    frame_thread = None
+    current_frame = None
+    _frame_lock = None
+    quit_thread = False
 
     def __init__(self, model='yolo_v3'):
         print('Loading {} model ...'.format(model))
@@ -16,6 +24,7 @@ class ProcessVideo:
         else:
             from tf_detector import TfDetector
             self.class_model = TfDetector(model)
+        self.stack = LifoQueue(maxsize=40*60*5)
 
     @staticmethod
     def check_valid_detection(img, rect_list, score_list, class_list, threshold=0.6):
@@ -55,10 +64,8 @@ class ProcessVideo:
         while True:
             ret, frame = cap.read()
 
-            if not ret:
-                time.sleep(0.1)
-                continue
-
+            self.stack.put(frame)
+            
             img_draw, valid_rects = self.process_image(frame, DETECT_THRESHOLD)
 
             if f_save:
@@ -72,26 +79,27 @@ class ProcessVideo:
         cap.release()
         cv2.destroyAllWindows()
 
-    def process_video_split(self, video_source, f_send_server=True, f_show=True, f_save=False):
-        print('Video Source => ' + video_source)
-        cap = cv2.VideoCapture(video_source)
+    def process_frame(self, frame_info, params):
+        video_w = frame_info['video_w']
+        video_h = frame_info['video_h']
+        start_h = frame_info['start_h']
+        end_h = frame_info['end_h']
+        start_w = frame_info['start_w']
+        end_w = frame_info['end_w']
+        fps = frame_info['fps']
 
-        video_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        video_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        start_h = int(video_h * 0.4)
-        end_h = int(video_h * 0.6)
-        start_w = int(video_w * 0.45)
-        end_w = int(video_w * 0.55)
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
-
+        f_send_server = params['f_send_server']
+        f_show = params['f_show']
+        f_save = params['f_save']
+        out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
+        frame = None
         while True:
-            ret, frame = cap.read()
-
-            if not ret:
-                break
-
-            # --------------------- split frame and detect individually --------------------
+            with self._frame_lock:
+                if self.current_frame is not None:
+                    frame = self.current_frame.copy()
+            if frame is None:
+                time.sleep(0.01)
+                continue
             frame1 = frame[:end_h, :end_w].copy()
             frame2 = frame[:end_h, start_w:].copy()
             frame3 = frame[start_h:, :end_w].copy()
@@ -139,8 +147,8 @@ class ProcessVideo:
             # ----------------------- Send the result to server --------------------------
             if f_send_server:
                 temp_name = str(time.time()) + '.jpg'
-                cv2.imwrite(temp_name, frame)
-                json_req = make_request_json(ip_addr=video_source, img_file=temp_name, count=len(valid_rects),
+                # cv2.imwrite(temp_name, frame)
+                json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
                                              cam_name=CAMERA_NAME)
                 send_request(server=SERVER_URL, cam_name=CAMERA_NAME, req_json=json_req)
                 # func.rm_file(temp_name)
@@ -150,18 +158,62 @@ class ProcessVideo:
 
             img_draw = self.draw_img(frame, valid_rects)
             img_draw = self.draw_count(img_draw, len(valid_rects))
-
             if f_save:
                 out.write(img_draw)
 
             if f_show:
                 cv2.imshow('frame', cv2.resize(img_draw, None, fx=0.5, fy=0.5))
-
-            if cv2.waitKey(1) == ord('q'):
+            if self.quit_thread:
                 break
+            # if cv2.waitKey(0.01) == ord('q'):
+            #     break
 
+        # cv2.destroyAllWindows()
+
+    def process_video_stream(self, video_source, f_send_server=True, f_show=True, f_save=False):
+        print('Video Source => ' + video_source)
+        cap = cv2.VideoCapture(video_source)
+        self.quit_thread = True
+        video_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        video_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        start_h = int(video_h * 0.4)
+        end_h = int(video_h * 0.6)
+        start_w = int(video_w * 0.45)
+        end_w = int(video_w * 0.55)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+
+        frame_info = {
+            'video_w': video_w,
+            'video_h': video_h,
+            'start_h': start_h,
+            'end_h': end_h,
+            'start_w': start_w,
+            'end_w': end_w,
+            'fps': fps,
+        }
+        params = {
+            'f_send_server': f_send_server,
+            'f_show': f_show,
+            'f_save': f_save
+        }
+        self._frame_lock = threading.Lock()
+        self.frame_thread = threading.Thread(target=self.process_frame, kwargs={'frame_info': frame_info,
+                                                                                'params': params})
+        if self.frame_thread:
+            self.frame_thread.start()
+        n = 0
+        while True:
+            with self._frame_lock:
+                ret, self.current_frame = cap.read()
+            print('frame = {}'.format(n))
+            n = n + 1
+            if not ret:
+                time.sleep(1)
+                break
+            # --------------------- split frame and detect individually --------------------
+
+        self.quit_thread = True
         cap.release()
-        cv2.destroyAllWindows()
 
     def process_image(self, frame, threshold=0.2):
         # ------------------------ detect person ---------------------------
@@ -189,4 +241,4 @@ if __name__ == '__main__':
     class_obj = ProcessVideo(MODEL_NAME)
     # video_src = './3.mov'
     # class_obj.process_video(filename, f_save=False)
-    class_obj.process_video_split(video_src, f_send_server=F_SEND_SERVER, f_save=F_WRITE_VIDEO, f_show=F_SHOW_RESULT)
+    class_obj.process_video_stream(video_src, f_send_server=F_SEND_SERVER, f_save=F_WRITE_VIDEO, f_show=F_SHOW_RESULT)
