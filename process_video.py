@@ -201,12 +201,10 @@ class ProcessVideo:
                                                                                 'params': params})
         if self.frame_thread:
             self.frame_thread.start()
-        n = 0
+
         while True:
             with self._frame_lock:
                 ret, self.current_frame = cap.read()
-            print('frame = {}'.format(n))
-            n = n + 1
             if not ret:
                 time.sleep(1)
                 break
