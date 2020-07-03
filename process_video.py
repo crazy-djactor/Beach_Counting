@@ -207,6 +207,7 @@ class ProcessVideo:
         #     self.frame_thread.start()
 
         camera_ctrl = CameraController()
+        camera_ctrl.get_presets()
 
         while True:
             current_preset, moving = camera_ctrl.get_current_preset()
@@ -215,12 +216,9 @@ class ProcessVideo:
                                                                  current_preset['PTZPosition'].PanTilt.y,
                                                                  current_preset['PTZPosition'].Zoom.x, moving))
 
-            # if moving:
-            #     time.sleep(2)
-            #     sleep_time += 2
-            #     if sleep_time > 200:
-            #         break
-            #     continue
+            if moving == 'MOVING':
+                time.sleep(2)
+                continue
             # sleep_time = 0
             # image = io.imread(snapshot)
 
