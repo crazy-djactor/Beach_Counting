@@ -94,7 +94,7 @@ class ProcessVideo:
         f_send_server = params['f_send_server']
         f_show = params['f_show']
         f_save = params['f_save']
-        zone_name = params['zone_name']
+
         # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
         frame = None
         while True:
@@ -170,8 +170,8 @@ class ProcessVideo:
 
                 cv2.imwrite(temp_name, frame)
                 json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
-                                             cam_name=zone_name)
-                send_request(server=SERVER_URL, cam_name=zone_name, req_json=json_req)
+                                             cam_name=current_preset.Name)
+                send_request(server=SERVER_URL, cam_name=current_preset.Name, req_json=json_req)
                 # func.rm_file(temp_name)
 
             # ---------------------------- draw the result -------------------------------
