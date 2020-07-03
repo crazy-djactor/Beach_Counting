@@ -3,8 +3,6 @@ import threading
 from camera_controller import CameraController
 from config.setting import *
 from json_send import *
-from queue import LifoQueue
-from skimage import io
 import func
 import time
 import cv2
@@ -26,7 +24,7 @@ class ProcessVideo:
         else:
             from tf_detector import TfDetector
             self.class_model = TfDetector(model)
-        self.stack = LifoQueue(maxsize=40*60*5)
+
 
     @staticmethod
     def check_valid_detection(img, rect_list, score_list, class_list, threshold=0.6):
@@ -93,14 +91,16 @@ class ProcessVideo:
         f_send_server = params['f_send_server']
         f_show = params['f_show']
         f_save = params['f_save']
+        zone_name = params['zone_name']
         # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
         frame = None
         while True:
-            with self._frame_lock:
-                if self.current_frame is not None:
-                    frame = self.current_frame.copy()
+            self._frame_lock = True
+            if self.current_frame is not None:
+                frame = self.current_frame.copy()
             if frame is None:
                 time.sleep(0.01)
+                self._frame_lock = False
                 continue
             frame1 = frame[:end_h, :end_w].copy()
             frame2 = frame[:end_h, start_w:].copy()
@@ -145,26 +145,29 @@ class ProcessVideo:
                     if not func.check_contain(valid_rects, new_rect):
                         new_rect_list.append(new_rect)
             valid_rects += new_rect_list
-
+            self._frame_lock = False
             # ----------------------- Send the result to server --------------------------
             if f_send_server:
                 temp_name = str(time.time()) + '.jpg'
-                # cv2.imwrite(temp_name, frame)
+
+                # print(valid_rects)
+
+                cv2.imwrite(temp_name, frame)
                 json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
-                                             cam_name=CAMERA_NAME)
-                send_request(server=SERVER_URL, cam_name=CAMERA_NAME, req_json=json_req)
+                                             cam_name=zone_name)
+                send_request(server=SERVER_URL, cam_name=zone_name, req_json=json_req)
                 # func.rm_file(temp_name)
 
             # ---------------------------- draw the result -------------------------------
             print('The are {} peoples.'.format(len(valid_rects)))
 
-            img_draw = self.draw_img(frame, valid_rects)
-            img_draw = self.draw_count(img_draw, len(valid_rects))
-            if f_save:
-                out.write(img_draw)
+            # img_draw = self.draw_img(frame, valid_rects)
+            # img_draw = self.draw_count(img_draw, len(valid_rects))
+            # if f_save:
+            #     out.write(img_draw)
 
-            if f_show:
-                cv2.imshow('frame', cv2.resize(img_draw, None, fx=0.5, fy=0.5))
+            # if f_show:
+            #     cv2.imshow('frame', cv2.resize(img_draw, None, fx=0.5, fy=0.5))
             if self.quit_thread:
                 break
             # if cv2.waitKey(0.01) == ord('q'):
@@ -193,45 +196,50 @@ class ProcessVideo:
             'end_w': end_w,
             'fps': fps,
         }
-        cap.release()
         params = {
             'f_send_server': f_send_server,
             'f_show': f_show,
             'f_save': f_save
         }
-        self._frame_lock = threading.Lock()
-        self.frame_thread = threading.Thread(target=self.process_frame, kwargs={'frame_info': frame_info,
-                                                                                'params': params})
-        if self.frame_thread:
-            self.frame_thread.start()
+        # self.frame_thread = threading.Thread(target=self.process_frame, kwargs={})
+
+        # if self.frame_thread:
+        #     self.frame_thread.start()
 
         camera_ctrl = CameraController()
 
-        sleep_time = 0
         while True:
-            current_preset, moving, snapshot = camera_ctrl.get_current_preset()
+            current_preset, moving = camera_ctrl.get_current_preset()
             print("current preset {} => ({}, {}, {})  {}".format(current_preset.Name,
-                                                            current_preset['PTZPosition'].PanTilt.x,
-                                                            current_preset['PTZPosition'].PanTilt.y,
-                                                            current_preset['PTZPosition'].Zoom.x, moving))
-            if moving:
-                time.sleep(2)
-                sleep_time += 2
-                if sleep_time > 200:
-                    break
-                continue
-            sleep_time = 0
-            image = io.imread(snapshot)
-            with self._frame_lock:
-                # ret, self.current_frame = cap.read()
-                self.current_frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                                                                 current_preset['PTZPosition'].PanTilt.x,
+                                                                 current_preset['PTZPosition'].PanTilt.y,
+                                                                 current_preset['PTZPosition'].Zoom.x, moving))
 
-            # if not ret:
-            #     time.sleep(1)
-            #     break
+            # if moving:
+            #     time.sleep(2)
+            #     sleep_time += 2
+            #     if sleep_time > 200:
+            #         break
+            #     continue
+            # sleep_time = 0
+            # image = io.imread(snapshot)
+
+            ret, self.current_frame = cap.read()
+            if not ret:
+                cap.release()
+                time.sleep(1)
+                cap = cv2.VideoCapture(video_source)
+
+            st = time.time()
+            params['zone_name'] = current_preset.Name
+            self.quit_thread = True
+            self.process_frame(frame_info=frame_info, params=params)
+            print(time.time() - st)
+
+            # self.current_frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             # --------------------- split frame and detect individually --------------------
 
-        self.quit_thread = True
+        # self.quit_thread = True
         # cap.release()
 
     def process_image(self, frame, threshold=0.2):

@@ -3,6 +3,7 @@ import asyncio, sys
 from onvif import ONVIFCamera
 from config.setting import *
 
+
 ptz = None
 active = False
 
@@ -46,9 +47,9 @@ class CameraController:
                 min_dist = dist
                 current_prest = preset
 
-        snapshot = media.GetSnapshotUri({'ProfileToken': profileToken})
-        print('snapshot uri {}'.format(snapshot))
-        return current_prest, self.status.MoveStatus.PanTilt, snapshot
+        # snapshot = media.GetSnapshotUri({'ProfileToken': profileToken})
+        # print('snapshot uri {}'.format(snapshot))
+        return current_prest, self.status.MoveStatus.PanTilt
 
     def get_presets(self):
         mycam = ONVIFCamera(CAMERA_IP, CAMERA_PASSWORD, CAMERA_USER_NAME, CAMERA_PASSWORD)
