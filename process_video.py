@@ -216,8 +216,8 @@ class ProcessVideo:
                                                                  current_preset['PTZPosition'].PanTilt.y,
                                                                  current_preset['PTZPosition'].Zoom.x, moving))
 
-            if moving == 'MOVING':
-                time.sleep(2)
+            if moving == 'MOVING' or current_preset.Name == '':
+                time.sleep(0.5)
                 continue
             # sleep_time = 0
             # image = io.imread(snapshot)
@@ -225,8 +225,9 @@ class ProcessVideo:
             ret, self.current_frame = cap.read()
             if not ret:
                 cap.release()
-                time.sleep(1)
+                time.sleep(0.5)
                 cap = cv2.VideoCapture(video_source)
+                continue
 
             st = time.time()
             params['zone_name'] = current_preset.Name

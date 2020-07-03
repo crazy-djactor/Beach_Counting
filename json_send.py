@@ -23,8 +23,8 @@ def make_request_json(ip_addr, img_file, cam_name, count=0):
 def send_request(server, cam_name, req_json):
     try:
         post_url = server+cam_name
+        print("Send Request with %s" % req_json)
         response = requests.post(url=post_url, json=req_json)
-        print("Server responded with %s" % response.status_code)
         response_json = response.json()
         return response_json
     except:
