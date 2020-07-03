@@ -1,8 +1,10 @@
 import threading
 
+from camera_controller import CameraController
 from config.setting import *
 from json_send import *
 from queue import LifoQueue
+from skimage import io
 import func
 import time
 import cv2
@@ -91,7 +93,7 @@ class ProcessVideo:
         f_send_server = params['f_send_server']
         f_show = params['f_show']
         f_save = params['f_save']
-        out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
+        # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
         frame = None
         while True:
             with self._frame_lock:
@@ -181,7 +183,7 @@ class ProcessVideo:
         start_w = int(video_w * 0.45)
         end_w = int(video_w * 0.55)
         fps = cap.get(cv2.CAP_PROP_FPS)
-
+        #
         frame_info = {
             'video_w': video_w,
             'video_h': video_h,
@@ -191,6 +193,7 @@ class ProcessVideo:
             'end_w': end_w,
             'fps': fps,
         }
+        cap.release()
         params = {
             'f_send_server': f_send_server,
             'f_show': f_show,
@@ -202,16 +205,34 @@ class ProcessVideo:
         if self.frame_thread:
             self.frame_thread.start()
 
+        camera_ctrl = CameraController()
+
+        sleep_time = 0
         while True:
+            current_preset, moving, snapshot = camera_ctrl.get_current_preset()
+            print("current preset {} => ({}, {}, {})  {}".format(current_preset.Name,
+                                                            current_preset['PTZPosition'].PanTilt.x,
+                                                            current_preset['PTZPosition'].PanTilt.y,
+                                                            current_preset['PTZPosition'].Zoom.x, moving))
+            if moving:
+                time.sleep(2)
+                sleep_time += 2
+                if sleep_time > 200:
+                    break
+                continue
+            sleep_time = 0
+            image = io.imread(snapshot)
             with self._frame_lock:
-                ret, self.current_frame = cap.read()
-            if not ret:
-                time.sleep(1)
-                break
+                # ret, self.current_frame = cap.read()
+                self.current_frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+            # if not ret:
+            #     time.sleep(1)
+            #     break
             # --------------------- split frame and detect individually --------------------
 
         self.quit_thread = True
-        cap.release()
+        # cap.release()
 
     def process_image(self, frame, threshold=0.2):
         # ------------------------ detect person ---------------------------
