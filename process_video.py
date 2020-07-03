@@ -80,6 +80,9 @@ class ProcessVideo:
         cv2.destroyAllWindows()
 
     def process_frame(self, frame_info, params):
+        camera_ctrl = CameraController()
+        camera_ctrl.get_presets()
+
         video_w = frame_info['video_w']
         video_h = frame_info['video_h']
         start_h = frame_info['start_h']
@@ -95,6 +98,19 @@ class ProcessVideo:
         # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
         frame = None
         while True:
+            try:
+                current_preset, moving = camera_ctrl.get_current_preset()
+                print("current preset {} => ({}, {}, {})  {}".format(current_preset.Name,
+                                                                     current_preset['PTZPosition'].PanTilt.x,
+                                                                     current_preset['PTZPosition'].PanTilt.y,
+                                                                     current_preset['PTZPosition'].Zoom.x, moving))
+            except:
+                time.sleep(0.5)
+                continue
+            if moving == "MOVING":
+                time.sleep(0.5)
+                continue
+
             self._frame_lock = True
             if self.current_frame is not None:
                 frame = self.current_frame.copy()
@@ -102,6 +118,7 @@ class ProcessVideo:
                 time.sleep(0.01)
                 self._frame_lock = False
                 continue
+
             frame1 = frame[:end_h, :end_w].copy()
             frame2 = frame[:end_h, start_w:].copy()
             frame3 = frame[start_h:, :end_w].copy()
@@ -145,12 +162,11 @@ class ProcessVideo:
                     if not func.check_contain(valid_rects, new_rect):
                         new_rect_list.append(new_rect)
             valid_rects += new_rect_list
+
             self._frame_lock = False
             # ----------------------- Send the result to server --------------------------
             if f_send_server:
                 temp_name = str(time.time()) + '.jpg'
-
-                # print(valid_rects)
 
                 cv2.imwrite(temp_name, frame)
                 json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
@@ -178,7 +194,6 @@ class ProcessVideo:
     def process_video_stream(self, video_source, f_send_server=True, f_show=True, f_save=False):
         print('Video Source => ' + video_source)
         cap = cv2.VideoCapture(video_source)
-        self.quit_thread = True
         video_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         video_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         start_h = int(video_h * 0.4)
@@ -201,40 +216,27 @@ class ProcessVideo:
             'f_show': f_show,
             'f_save': f_save
         }
-        # self.frame_thread = threading.Thread(target=self.process_frame, kwargs={})
+        self.quit_thread = False
 
-        # if self.frame_thread:
-        #     self.frame_thread.start()
+        self.frame_thread = threading.Thread(target=self.process_frame, kwargs={'frame_info': frame_info,
+                                                                                'params': params})
 
-        camera_ctrl = CameraController()
-        camera_ctrl.get_presets()
+        if self.frame_thread:
+            self.frame_thread.start()
 
         while True:
-            current_preset, moving = camera_ctrl.get_current_preset()
-            print("current preset {} => ({}, {}, {})  {}".format(current_preset.Name,
-                                                                 current_preset['PTZPosition'].PanTilt.x,
-                                                                 current_preset['PTZPosition'].PanTilt.y,
-                                                                 current_preset['PTZPosition'].Zoom.x, moving))
 
-            if moving == 'MOVING' or current_preset.Name == '':
-                time.sleep(0.5)
-                continue
             # sleep_time = 0
             # image = io.imread(snapshot)
 
-            ret, self.current_frame = cap.read()
+            ret, current_frame = cap.read()
             if not ret:
                 cap.release()
                 time.sleep(0.5)
                 cap = cv2.VideoCapture(video_source)
                 continue
-
-            st = time.time()
-            params['zone_name'] = current_preset.Name
-            self.quit_thread = True
-            self.process_frame(frame_info=frame_info, params=params)
-            print(time.time() - st)
-
+            if not self._frame_lock:
+                self.current_frame = current_frame
             # self.current_frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             # --------------------- split frame and detect individually --------------------
 
