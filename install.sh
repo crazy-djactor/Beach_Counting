@@ -10,6 +10,6 @@ sudo pip3 install --pre --extra-index-url https://developer.download.nvidia.com/
 
 bash ./download_model.bash
 
-cp ./BeachCounting.sh /usr/local/bin/BeachCounting.sh
+sudo cp ./BeachCounting.sh /usr/local/bin/BeachCounting.sh
 sudo chmod +x /usr/local/bin/BeachCounting.sh
-cp ./start.service /etc/systemd/system/start.service
+sudo cp ./start.service /etc/systemd/system/start.service
