@@ -1,0 +1,1 @@
+python3 /home/adminmarjet004/Documents/Beach_Counting/process_video.py
