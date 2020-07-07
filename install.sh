@@ -12,6 +12,7 @@
 
 DIR = '/etc/onvif/wsdl'
 if [ -d "$DIR" ]; then
+  echo "Directory Exist for wsl..."
 else
   echo "Making directory for wsl..."
   sudo mkdir /etc/onvif
