@@ -110,7 +110,7 @@ class ProcessVideo:
             if moving == "MOVING":
                 time.sleep(0.5)
                 continue
-
+            print("frame _lock===")
             self._frame_lock = True
             if self.current_frame is not None:
                 frame = self.current_frame.copy()
@@ -118,16 +118,20 @@ class ProcessVideo:
                 time.sleep(0.01)
                 self._frame_lock = False
                 continue
-
+            print("frame ==copied ===")
             frame1 = frame[:end_h, :end_w].copy()
             frame2 = frame[:end_h, start_w:].copy()
             frame3 = frame[start_h:, :end_w].copy()
             frame4 = frame[start_h:, start_w:].copy()
-
+            print("frame ==processing 0 ===")
             _, valid_rects1 = self.process_image(frame1, DETECT_THRESHOLD)
+            print("frame ==processing 1 ===")
             _, valid_rects2 = self.process_image(frame2, DETECT_THRESHOLD)
+            print("frame ==processing 2 ===")
             _, valid_rects3 = self.process_image(frame3, DETECT_THRESHOLD)
+            print("frame ==processing 3 ===")
             _, valid_rects4 = self.process_image(frame4, DETECT_THRESHOLD)
+            print("frame ==processing 4 ===")
 
             # -------------------------- combine the detection result ----------------------
             valid_rects = []
