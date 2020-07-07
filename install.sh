@@ -10,8 +10,17 @@
 
 #bash ./download_model.bash
 
-sudo mkdir /etc/onvif/wsdl
+DIR = '/etc/onvif/wsdl'
+if [ -d "$DIR" ]; then
+else
+  echo "Making directory for wsl..."
+  sudo mkdir /etc/onvif
+  sudo mkdir /etc/onvif/wsdl
+fi
+echo "Copy files to wsdl..."
 sudo cp ./wsdl/* /etc/onvif/wsdl
+echo "Copy BeachCounting.sh to /usr/local/bin/BeachCounting.sh..."
 sudo cp ./BeachCounting.sh /usr/local/bin/BeachCounting.sh
 sudo chmod +x /usr/local/bin/BeachCounting.sh
+echo "Copy beach.service to /etc/systemd/system/beach.service..."
 sudo cp ./beach.service /etc/systemd/system/beach.service
