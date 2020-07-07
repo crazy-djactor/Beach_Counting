@@ -10,7 +10,7 @@
 
 #bash ./download_model.bash
 
-DIR = '/etc/onvif/wsdl'
+DIR="/etc/onvif/wsdl"
 if [ -d "$DIR" ]; then
   echo "Directory Exist for wsl..."
 else
