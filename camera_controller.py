@@ -1,5 +1,4 @@
 import zeep
-import asyncio, sys
 from onvif import ONVIFCamera
 from config.setting import *
 
