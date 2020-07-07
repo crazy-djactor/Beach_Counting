@@ -20,8 +20,5 @@ else
 fi
 echo "Copy files to wsdl..."
 sudo cp ./wsdl/* /etc/onvif/wsdl
-echo "Copy BeachCounting.sh to /usr/local/bin/BeachCounting.sh..."
-sudo cp ./BeachCounting.sh /usr/local/bin/BeachCounting.sh
-sudo chmod +x /usr/local/bin/BeachCounting.sh
 echo "Copy beach.service to /etc/systemd/system/beach.service..."
 sudo cp ./beach.service /etc/systemd/system/beach.service
