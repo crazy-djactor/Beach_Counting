@@ -3,7 +3,7 @@ Description=Beach Counting Service
 After=multi-user.target
 
 [Service]
-ExecStart=/usr/local/bin/BeachCounting.sh
+ExecStart=/usr/bin/python3 /home/adminmarjet002/Documents/Beach_Counting/process_video.py
 Restart=always
 StartLimitInterval=10
 RestartSec=10
