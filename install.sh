@@ -14,4 +14,4 @@ sudo mkdir /etc/onvif/wsdl
 sudo cp ./wsdl/* /etc/onvif/wsdl
 sudo cp ./BeachCounting.sh /usr/local/bin/BeachCounting.sh
 sudo chmod +x /usr/local/bin/BeachCounting.sh
-sudo cp ./start.service /etc/systemd/system/start.service
+sudo cp ./beach.service /etc/systemd/system/beach.service
