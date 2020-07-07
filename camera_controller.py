@@ -1,17 +1,17 @@
-# import zeep
+import zeep
 from onvif import ONVIFCamera
 from config.setting import *
 
 
-# ptz = None
-# active = False
-#
-#
-# def zeep_pythonvalue(self, xmlvalue):
-#     return xmlvalue
-#
-#
-# zeep.xsd.simple.AnySimpleType.pythonvalue = zeep_pythonvalue
+ptz = None
+active = False
+
+
+def zeep_pythonvalue(self, xmlvalue):
+    return xmlvalue
+
+
+zeep.xsd.simple.AnySimpleType.pythonvalue = zeep_pythonvalue
 
 
 class CameraController:
