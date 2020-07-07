@@ -20,7 +20,7 @@ class CameraController:
     status = None
 
     def get_current_preset(self):
-        mycam = ONVIFCamera(CAMERA_IP, CAMERA_CONTROL_PORT, CAMERA_USER_NAME, CAMERA_PASSWORD, './wsdl/')
+        mycam = ONVIFCamera(CAMERA_IP, CAMERA_CONTROL_PORT, CAMERA_USER_NAME, CAMERA_PASSWORD, '/etc/onvif/wsdl/')
         # Create media service object
         media = mycam.create_media_service()
         print("setup_move {} {}", mycam, media)
@@ -52,7 +52,7 @@ class CameraController:
         return current_prest, self.status.MoveStatus.PanTilt
 
     def get_presets(self):
-        mycam = ONVIFCamera(CAMERA_IP, CAMERA_CONTROL_PORT, CAMERA_USER_NAME, CAMERA_PASSWORD, './wsdl/')
+        mycam = ONVIFCamera(CAMERA_IP, CAMERA_CONTROL_PORT, CAMERA_USER_NAME, CAMERA_PASSWORD, '/etc/onvif/wsdl/')
         # Create media service object
         media = mycam.create_media_service()
         print("setup_move {} {}", mycam, media)
