@@ -16,7 +16,7 @@ class ProcessVideo:
     _frame_lock = None
     quit_thread = False
 
-    def __init__(self, model='yolo_v3'):
+    def __init__(self, model= 'yolo_v3'):
         print('Loading {} model ...'.format(model))
         if model == 'yolo_v3':
             from yolo import YOLO
