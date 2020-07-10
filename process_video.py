@@ -129,7 +129,7 @@ class ProcessVideo:
                 if f_send_server:
                     temp_name = str(time.time()) + '.jpg'
 
-                    cv2.imwrite(temp_name, img_draw)
+                    # cv2.imwrite(temp_name, img_draw)
                     json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
                                                  cam_name=current_preset.Name)
                     send_request(server=SERVER_URL, cam_name=current_preset.Name, req_json=json_req)
