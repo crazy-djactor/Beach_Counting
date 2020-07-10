@@ -95,8 +95,8 @@ class ProcessVideo:
         f_show = params['f_show']
         f_save = params['f_save']
 
-        resize_w = f_resize_ratio * video_w
-        resize_h = f_resize_ratio * video_h
+        resize_w = int(f_resize_ratio * video_w)
+        resize_h = int(f_resize_ratio * video_h)
 
         # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
         frame = None
@@ -123,7 +123,8 @@ class ProcessVideo:
                 self._frame_lock = False
                 continue
             if f_resize_ratio < 1:
-                resize_frame = cv2.resize(frame, (resize_w, resize_h), cv2.INTER_AREA)
+                dim = (resize_w, resize_h)
+                resize_frame = cv2.resize(frame, dim, cv2.INTER_AREA)
                 img_draw, valid_rects = self.process_image(resize_frame, DETECT_THRESHOLD)
                 if f_send_server:
                     temp_name = str(time.time()) + '.jpg'
