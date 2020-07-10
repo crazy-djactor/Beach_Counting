@@ -90,10 +90,13 @@ class ProcessVideo:
         start_w = frame_info['start_w']
         end_w = frame_info['end_w']
         fps = frame_info['fps']
-
+        f_resize_ratio = frame_info['resize_ratio']
         f_send_server = params['f_send_server']
         f_show = params['f_show']
         f_save = params['f_save']
+
+        resize_w = f_resize_ratio * video_w
+        resize_h = f_resize_ratio * video_h
 
         # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
         frame = None
@@ -114,73 +117,81 @@ class ProcessVideo:
             self._frame_lock = True
             if self.current_frame is not None:
                 frame = self.current_frame.copy()
+
             if frame is None:
                 time.sleep(0.01)
                 self._frame_lock = False
                 continue
-            print("frame ==copied ===")
-            frame1 = frame[:end_h, :end_w].copy()
-            frame2 = frame[:end_h, start_w:].copy()
-            frame3 = frame[start_h:, :end_w].copy()
-            frame4 = frame[start_h:, start_w:].copy()
-            print("frame ==processing 0 ===")
-            _, valid_rects1 = self.process_image(frame1, DETECT_THRESHOLD)
-            print("frame ==processing 1 ===")
-            _, valid_rects2 = self.process_image(frame2, DETECT_THRESHOLD)
-            print("frame ==processing 2 ===")
-            _, valid_rects3 = self.process_image(frame3, DETECT_THRESHOLD)
-            print("frame ==processing 3 ===")
-            _, valid_rects4 = self.process_image(frame4, DETECT_THRESHOLD)
-            print("frame ==processing 4 ===")
+            if f_resize_ratio < 1:
+                resize_frame = cv2.resize(frame, (resize_w, resize_h), cv2.INTER_AREA)
+                img_draw, valid_rects = self.process_image(resize_frame, DETECT_THRESHOLD)
+                if f_send_server:
+                    temp_name = str(time.time()) + '.jpg'
 
-            # -------------------------- combine the detection result ----------------------
-            valid_rects = []
-            for i in range(len(valid_rects1)):
-                rect = valid_rects1[i]
-                if rect[2] < end_w - 10 and rect[3] < end_h - 10:
-                    valid_rects.append(rect)
+                    cv2.imwrite(temp_name, img_draw)
+                    json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
+                                                 cam_name=current_preset.Name)
+                    send_request(server=SERVER_URL, cam_name=current_preset.Name, req_json=json_req)
+            else:
+                print("frame ==copied ===")
+                frame1 = frame[:end_h, :end_w].copy()
+                frame2 = frame[:end_h, start_w:].copy()
+                frame3 = frame[start_h:, :end_w].copy()
+                frame4 = frame[start_h:, start_w:].copy()
 
-            new_rect_list = []
-            for i in range(len(valid_rects2)):
-                rect = valid_rects2[i]
-                if rect[0] > 10 and rect[3] < end_h - 10:
-                    new_rect = [rect[0] + start_w, rect[1], rect[2] + start_w, rect[3]]
-                    if not func.check_contain(valid_rects, new_rect):
-                        new_rect_list.append(new_rect)
+                _, valid_rects1 = self.process_image(frame1, DETECT_THRESHOLD)
+                _, valid_rects2 = self.process_image(frame2, DETECT_THRESHOLD)
+                _, valid_rects3 = self.process_image(frame3, DETECT_THRESHOLD)
+                _, valid_rects4 = self.process_image(frame4, DETECT_THRESHOLD)
 
-            valid_rects += new_rect_list
-            new_rect_list = []
-            for i in range(len(valid_rects3)):
-                rect = valid_rects3[i]
-                if rect[2] < end_w - 10 and rect[1] > 10:
-                    new_rect = [rect[0], rect[1] + start_h, rect[2], rect[3] + start_h]
-                    if not func.check_contain(valid_rects, new_rect):
-                        new_rect_list.append(new_rect)
+                # -------------------------- combine the detection result ----------------------
+                valid_rects = []
+                for i in range(len(valid_rects1)):
+                    rect = valid_rects1[i]
+                    if rect[2] < end_w - 10 and rect[3] < end_h - 10:
+                        valid_rects.append(rect)
 
-            valid_rects += new_rect_list
-            new_rect_list = []
-            for i in range(len(valid_rects4)):
-                rect = valid_rects4[i]
-                if rect[0] > 10 and rect[1] > 10:
-                    new_rect = [rect[0] + start_w, rect[1] + start_h, rect[2] + start_w, rect[3] + start_h]
-                    if not func.check_contain(valid_rects, new_rect):
-                        new_rect_list.append(new_rect)
-            valid_rects += new_rect_list
+                new_rect_list = []
+                for i in range(len(valid_rects2)):
+                    rect = valid_rects2[i]
+                    if rect[0] > 10 and rect[3] < end_h - 10:
+                        new_rect = [rect[0] + start_w, rect[1], rect[2] + start_w, rect[3]]
+                        if not func.check_contain(valid_rects, new_rect):
+                            new_rect_list.append(new_rect)
+
+                valid_rects += new_rect_list
+                new_rect_list = []
+                for i in range(len(valid_rects3)):
+                    rect = valid_rects3[i]
+                    if rect[2] < end_w - 10 and rect[1] > 10:
+                        new_rect = [rect[0], rect[1] + start_h, rect[2], rect[3] + start_h]
+                        if not func.check_contain(valid_rects, new_rect):
+                            new_rect_list.append(new_rect)
+
+                valid_rects += new_rect_list
+                new_rect_list = []
+                for i in range(len(valid_rects4)):
+                    rect = valid_rects4[i]
+                    if rect[0] > 10 and rect[1] > 10:
+                        new_rect = [rect[0] + start_w, rect[1] + start_h, rect[2] + start_w, rect[3] + start_h]
+                        if not func.check_contain(valid_rects, new_rect):
+                            new_rect_list.append(new_rect)
+                valid_rects += new_rect_list
+
+                # ----------------------- Send the result to server --------------------------
+                if f_send_server:
+                    temp_name = str(time.time()) + '.jpg'
+
+                    # cv2.imwrite(temp_name, frame)
+                    json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
+                                                 cam_name=current_preset.Name)
+                    send_request(server=SERVER_URL, cam_name=current_preset.Name, req_json=json_req)
+                    # func.rm_file(temp_name)
+
+                # ---------------------------- draw the result -------------------------------
+                print('The are {} peoples.'.format(len(valid_rects)))
 
             self._frame_lock = False
-            # ----------------------- Send the result to server --------------------------
-            if f_send_server:
-                temp_name = str(time.time()) + '.jpg'
-
-                # cv2.imwrite(temp_name, frame)
-                json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
-                                             cam_name=current_preset.Name)
-                send_request(server=SERVER_URL, cam_name=current_preset.Name, req_json=json_req)
-                # func.rm_file(temp_name)
-
-            # ---------------------------- draw the result -------------------------------
-            print('The are {} peoples.'.format(len(valid_rects)))
-
             # img_draw = self.draw_img(frame, valid_rects)
             # img_draw = self.draw_count(img_draw, len(valid_rects))
             # if f_save:
