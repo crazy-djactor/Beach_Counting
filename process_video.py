@@ -122,7 +122,7 @@ class ProcessVideo:
                 time.sleep(0.01)
                 self._frame_lock = False
                 continue
-            if f_resize_ratio < 1:
+            if f_resize_ratio <= 1:
                 dim = (resize_w, resize_h)
                 resize_frame = cv2.resize(frame, dim, cv2.INTER_AREA)
                 img_draw, valid_rects = self.process_image(resize_frame, DETECT_THRESHOLD)
@@ -226,7 +226,7 @@ class ProcessVideo:
             'start_w': start_w,
             'end_w': end_w,
             'fps': fps,
-            'resize_ratio': 0.99,
+            'resize_ratio': 1.0,
         }
         params = {
             'f_send_server': f_send_server,
