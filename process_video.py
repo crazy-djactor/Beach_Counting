@@ -225,6 +225,7 @@ class ProcessVideo:
             'start_w': start_w,
             'end_w': end_w,
             'fps': fps,
+            'resize_ratio': 0.6,
         }
         params = {
             'f_send_server': f_send_server,
