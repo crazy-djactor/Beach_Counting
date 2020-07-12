@@ -10,7 +10,6 @@ class TfDetector:
         if model_type == 'faster_rcnn_resnet50':
             model_name = 'frozen_inference_graph_faster_50.pb'
         elif model_type == 'faster_rcnn_resnet101':
-
             model_name = 'frozen_inference_graph_faster_101.pb'
         elif model_type == 'ssd_mobile_v2':
             model_name = 'frozen_inference_graph_ssd_mobile_v2.pb'
@@ -20,13 +19,13 @@ class TfDetector:
         path_pb = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models', model_name)
         detection_graph = tf.Graph()
         with detection_graph.as_default():
-            od_graph_def = tf.GraphDef()
-            with tf.gfile.GFile(path_pb, 'rb') as fid:
+            od_graph_def = tf.compat.v1.GraphDef()
+            with tf.compat.v1.gfile.GFile(path_pb, 'rb') as fid:
                 serialized_graph = fid.read()
                 od_graph_def.ParseFromString(serialized_graph)
                 tf.import_graph_def(od_graph_def, name='')
 
-            self.sess = tf.Session(graph=detection_graph)
+            self.sess = tf.compat.v1.Session(graph=detection_graph)
 
         self.image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
         self.boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
