@@ -9,7 +9,7 @@ CAMERA_PASSWORD = 'C0nc3ll0M4r1n'
 
 # MODEL_NAME = 'yolo_v3'
 # MODEL_NAME = 'faster_rcnn_resnet101'
-MODEL_NAME = 'faster_rcnn_resnet50'
+MODEL_NAME = "faster_rcnn_resnet50"
 # MODEL_NAME = 'ssd_mobile_v2'
 
 DETECT_THRESHOLD = 0.2
