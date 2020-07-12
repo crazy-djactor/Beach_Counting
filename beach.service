@@ -1,11 +1,11 @@
 [Unit]
 Description=Beach Counting Service
 After=multi-user.target
+StartLimitIntervalSec=10
 
 [Service]
 ExecStart=/usr/bin/python3 /home/adminmarjet003/Documents/Beach_Counting/process_video.py
 Restart=always
-StartLimitInterval=10
 RestartSec=10
 
 [Install]

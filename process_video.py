@@ -15,6 +15,7 @@ class ProcessVideo:
     current_frame = None
     _frame_lock = None
     quit_thread = False
+    last_time = 0
 
     def __init__(self, model= 'yolo_v3'):
         print('Loading {} model ...'.format(model))
@@ -24,7 +25,7 @@ class ProcessVideo:
         else:
             from tf_detector import TfDetector
             self.class_model = TfDetector(model)
-
+        last_time = 0
 
     @staticmethod
     def check_valid_detection(img, rect_list, score_list, class_list, threshold=0.6):
@@ -100,6 +101,7 @@ class ProcessVideo:
 
         # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
         frame = None
+        self.last_time = 0
         while True:
             try:
                 current_preset, moving = camera_ctrl.get_current_preset()
@@ -133,6 +135,7 @@ class ProcessVideo:
                     json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
                                                  cam_name=current_preset.Name)
                     send_request(server=SERVER_URL, cam_name=current_preset.Name, req_json=json_req)
+                    self.last_time = time.time()
             else:
                 print("frame ==copied ===")
                 frame1 = frame[:end_h, :end_w].copy()
@@ -245,18 +248,22 @@ class ProcessVideo:
 
             # sleep_time = 0
             # image = io.imread(snapshot)
-
-            ret, current_frame = cap.read()
-            if not ret:
-                cap.release()
-                time.sleep(0.5)
-                cap = cv2.VideoCapture(video_source)
+            if time.time() - self.last_time > 60 and self.last_time != 0:
+                self.quit_thread = True
+                break
+            if cap.isOpened():
+                ret, current_frame = cap.read()
+                if not ret:
+                    cap.release()
+                    time.sleep(2)
+                    cap = cv2.VideoCapture(video_source)
+                    continue
+                if not self._frame_lock:
+                    self.current_frame = current_frame
+            else:
+                time.sleep(1)
                 continue
-            if not self._frame_lock:
-                self.current_frame = current_frame
-            # self.current_frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             # --------------------- split frame and detect individually --------------------
-
         # self.quit_thread = True
         # cap.release()
 
