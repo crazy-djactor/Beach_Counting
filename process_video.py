@@ -239,7 +239,7 @@ class ProcessVideo:
             'f_save': f_save
         }
         self.quit_thread = False
-
+        print('Thread Start => ' + video_source)
         self.frame_thread = threading.Thread(target=self.process_frame, kwargs={'frame_info': frame_info,
                                                                                 'params': params})
 
@@ -252,7 +252,8 @@ class ProcessVideo:
             # image = io.imread(snapshot)
             if time.time() - self.last_time > 300 and self.last_time != 0:
                 self.quit_thread = True
-                break
+                cap.release()
+                sys.exit()
             if cap.isOpened():
                 ret, current_frame = cap.read()
                 if not ret:
@@ -291,7 +292,7 @@ if __name__ == '__main__':
     else:
         video_src = 'rtsp://{}:{}@{}:554/cam/realmonitor?channel=1&subtype=0'.\
             format(CAMERA_USER_NAME, CAMERA_PASSWORD, CAMERA_IP)
-
+    print (" New process started ")
     class_obj = ProcessVideo(MODEL_NAME)
     # video_src = './3.mov'
     # class_obj.process_video(filename, f_save=False)
