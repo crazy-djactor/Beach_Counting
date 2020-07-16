@@ -24,7 +24,7 @@ def send_request(server, cam_name, req_json):
     try:
         post_url = server+cam_name
         response = requests.post(url=post_url, json=req_json)
-        print("Send Request with %s [resp=%s]" % req_json % response.status_code)
+        print("Send Request with {} [resp={}]".format(req_json,response.status_code))
         return response.status_code
     except:
         return None
