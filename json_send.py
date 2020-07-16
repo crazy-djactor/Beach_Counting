@@ -25,8 +25,7 @@ def send_request(server, cam_name, req_json):
         post_url = server+cam_name
         print("Send Request with %s" % req_json)
         response = requests.post(url=post_url, json=req_json)
-        response_json = response.json()
-        return response_json
+        return response.status_code
     except:
         return None
 

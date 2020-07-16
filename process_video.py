@@ -103,6 +103,8 @@ class ProcessVideo:
         frame = None
         self.last_time = 0
         while True:
+            if self.quit_thread:
+                break
             try:
                 current_preset, moving = camera_ctrl.get_current_preset()
                 print("current preset {} => ({}, {}, {})  {}".format(current_preset.Name,
@@ -134,8 +136,9 @@ class ProcessVideo:
                     # cv2.imwrite(temp_name, img_draw)
                     json_req = make_request_json(ip_addr=CAMERA_IP, img_file=temp_name, count=len(valid_rects),
                                                  cam_name=current_preset.Name)
-                    send_request(server=SERVER_URL, cam_name=current_preset.Name, req_json=json_req)
-                    self.last_time = time.time()
+                    response_code = send_request(server=SERVER_URL, cam_name=current_preset.Name, req_json=json_req)
+                    if response_code == 200:
+                        self.last_time = time.time()
             else:
                 print("frame ==copied ===")
                 frame1 = frame[:end_h, :end_w].copy()
@@ -203,8 +206,7 @@ class ProcessVideo:
 
             # if f_show:
             #     cv2.imshow('frame', cv2.resize(img_draw, None, fx=0.5, fy=0.5))
-            if self.quit_thread:
-                break
+
             # if cv2.waitKey(0.01) == ord('q'):
             #     break
 
