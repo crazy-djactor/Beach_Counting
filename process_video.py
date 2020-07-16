@@ -250,7 +250,7 @@ class ProcessVideo:
 
             # sleep_time = 0
             # image = io.imread(snapshot)
-            if time.time() - self.last_time > 60 and self.last_time != 0:
+            if time.time() - self.last_time > 300 and self.last_time != 0:
                 self.quit_thread = True
                 break
             if cap.isOpened():
@@ -267,7 +267,7 @@ class ProcessVideo:
                 continue
             # --------------------- split frame and detect individually --------------------
         # self.quit_thread = True
-        # cap.release()
+        cap.release()
 
     def process_image(self, frame, threshold=0.2):
         # ------------------------ detect person ---------------------------
