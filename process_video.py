@@ -251,6 +251,8 @@ class ProcessVideo:
             # sleep_time = 0
             # image = io.imread(snapshot)
             if time.time() - self.last_time > 300:
+                out_time = time.time() - self.last_time
+                print('Thread Timeout => {}'.format(out_time))
                 self.quit_thread = True
                 sys.exit()
 
