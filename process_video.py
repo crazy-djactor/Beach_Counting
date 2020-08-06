@@ -254,7 +254,7 @@ class ProcessVideo:
                 out_time = time.time() - self.last_time
                 print('Thread Timeout => {}'.format(out_time))
                 self.quit_thread = True
-                sys.exit()
+                break
 
             if cap.isOpened():
                 ret, current_frame = cap.read()
