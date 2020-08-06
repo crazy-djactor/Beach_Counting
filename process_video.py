@@ -269,7 +269,7 @@ class ProcessVideo:
                 time.sleep(1)
                 continue
             # --------------------- split frame and detect individually --------------------
-        # self.quit_thread = True
+        self.quit_thread = True
         cap.release()
 
     def process_image(self, frame, threshold=0.2):
