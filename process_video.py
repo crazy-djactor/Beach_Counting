@@ -240,6 +240,7 @@ class ProcessVideo:
         }
         self.quit_thread = False
         print('Thread Start => ' + video_source)
+        self.last_time = time.time()
         self.frame_thread = threading.Thread(target=self.process_frame, kwargs={'frame_info': frame_info,
                                                                                 'params': params})
 
