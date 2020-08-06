@@ -55,4 +55,11 @@ After install packages, should copy models and config folder manually because th
     sudo crontab -e
     0 3 * * * /sbin/shutdown -r +2
     
-   
+## supervisor for beach counting
+    /etc/supervisor/conf.d/beachCount.conf
+    
+    command=/usr/bin/python3 /home/adminmarjet001/Documents/Beach_Counting/process_video.py
+    autostart=true
+    autorestart=true
+    stderr_logfile=/var/log/beachCounting.err.log
+    stdout_logfile=/var/log/beachCounting.out.log

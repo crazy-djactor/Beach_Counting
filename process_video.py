@@ -101,7 +101,7 @@ class ProcessVideo:
 
         # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MPEG'), fps, (video_w, video_h))
         frame = None
-        self.last_time = 0
+        self.last_time = time.time()
         while True:
             if self.quit_thread:
                 break
@@ -250,10 +250,10 @@ class ProcessVideo:
 
             # sleep_time = 0
             # image = io.imread(snapshot)
-            if time.time() - self.last_time > 300 and self.last_time != 0:
+            if time.time() - self.last_time > 300:
                 self.quit_thread = True
-                cap.release()
                 sys.exit()
+
             if cap.isOpened():
                 ret, current_frame = cap.read()
                 if not ret:
